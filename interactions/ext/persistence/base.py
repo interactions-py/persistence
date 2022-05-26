@@ -29,18 +29,13 @@ class Persistence(Extension):
     @extension_listener(name="on_component")
     async def _on_component(self, ctx: ComponentContext):
         if not ctx.custom_id.startswith("persistence_"):
-            print("NOT A PERSISTENCE COMPONENT")
             return
         custom_id = PersistentCustomID.from_string(ctx.custom_id)
-        print("custom_id was", ctx.custom_id)
-        print("tag is", custom_id.tag)
         listener = self.client._websocket._dispatch
         for name, funcs in listener.events.items():
-            print("name is", name, "and funcs are", funcs)
             if name == "component_persistence_" + custom_id.tag:
                 for func in funcs:
                     await func(ctx, custom_id.package)
-                    print("called func")
                 break
 
 
