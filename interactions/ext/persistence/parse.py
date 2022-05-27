@@ -1,3 +1,9 @@
+def persistent_custom_id(tag: str, package: "SupportsRepr"):
+    return str(PersistentCustomID.new(tag, package))
+
+class ParseError(BaseException):
+    pass
+
 class PersistentCustomID:
     def __init__(self, tag: str, payload: str):  # noqa
         self.tag: str = tag
@@ -22,4 +28,14 @@ class PersistentCustomID:
 
     @classmethod
     def new(cls, tag: str, package: "SupportsRepr"):
-        return cls(tag, repr(package))
+        try:
+            tested = eval(repr(package))
+            if type(tested) != type(package):
+                raise ParseError(
+                    "Evaluation the repr of the package did not return the same type."
+                )
+            if len(tag) + 1 + len(repr(package)) > 100:
+                raise ParseError("The tag and payload combined are longer than 100 characters.")
+            return cls(tag, repr(package))
+        except:
+            raise ParseError("The package could not be evaluated because it didn't properly implement __repr__.")
