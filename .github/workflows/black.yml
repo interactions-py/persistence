@@ -1,12 +1,10 @@
-name: Lint
-
+name: Black Formatting
 on: [push, pull_request]
-
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: psf/black@stable
-        with:
-          src: "./interactions/ext/persistence"
+  Linter:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+        - uses: rickstaa/action-black@v1
+          with:
+            black_args: ". --check"
