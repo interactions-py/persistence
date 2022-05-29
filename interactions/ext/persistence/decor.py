@@ -9,7 +9,7 @@ def persistent_component(bot: Client, tag: str):
         tag (str): The tag to identify your component
     """
     def inner(coro):
-        bot.event(coro, name="component_persistence_" + tag)
+        bot.event(coro, name=f"component_persistence_{tag}")
         return coro
 
     return inner
@@ -23,7 +23,7 @@ def persistent_modal(bot: Client, tag: str):
         tag (str): The tag to identify your modal
     """
     def inner(coro):
-        bot.event(coro, name="modal_persistence_" + tag)
+        bot.event(coro, name=f"modal_persistence_{tag}")
         return coro
     
     return inner

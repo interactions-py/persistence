@@ -23,9 +23,9 @@ class PersistenceExtension(Extension):
         for _, func in getmembers(self, predicate=iscoroutinefunction):
             if hasattr(func, "__persistence_type__"):
                 if func.__persistence_type__ == "component": 
-                    client.event(func, name="component_persistence_" + func.__persistence_tag__)
+                    client.event(func, name=f"component_persistence_{func.__persistence_tag__}")
                 elif func.__persistence_type__ == "modal":
-                    client.event(func, name="modal_persistence_" + func.__persistence_tag__)
+                    client.event(func, name=f"modal_persistence_{func.__persistence_tag__}")
 
         return self
 
@@ -48,7 +48,7 @@ class Persistence(Extension):
         custom_id = PersistentCustomID.from_string(ctx.custom_id)
         listener = self.client._websocket._dispatch
         for name, funcs in listener.events.items():
-            if name == "component_persistence_" + custom_id.tag:
+            if name == f"component_persistence_{custom_id.tag}":
                 for func in funcs:
                     await func(ctx, custom_id.package)
                 break
@@ -70,7 +70,7 @@ class Persistence(Extension):
                 else:
                     answers.append([_value.value for _value in component.components][0])
         for name, funcs in listener.events.items():
-            if name == "modal_persistence_" + custom_id.tag:
+            if name == f"modal_persistence_{custom_id.tag}":
                 for func in funcs:
                     await func(ctx, custom_id.package, *answers)
                 break
