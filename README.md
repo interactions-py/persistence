@@ -1,4 +1,7 @@
 # Persistence
+
+![PyPI - Downloads](https://img.shields.io/pypi/dm/interactions-persistence?color=red)
+
 An extension for interactions.py that dynamically places and returns objects in and from Discord's `custom_ids` so you don't have to. Check the [wiki](https://github.com/Dworv/interactions-persistence/wiki) to learn how to use it!
 
 ## How it works
