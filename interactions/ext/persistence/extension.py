@@ -7,7 +7,16 @@ from .parse import PersistentCustomID
 
 
 class PersistenceExtension(Extension):
+    """The PersistenceExtension is based off of regular Extensions, but adds callbacks for persistent components and modals"""
     def __new__(cls, client: Client, *args, **kwargs):
+        """The extended __new__ dunder method for Persistence Extensions.
+
+        Args:
+            client (Client): An `interactions.Client` instance
+
+        Returns:
+            Extension: Returns a basic `interactions.Extension`
+        """
 
         self = super().__new__(cls, client, *args, **kwargs)
 
@@ -21,12 +30,19 @@ class PersistenceExtension(Extension):
         return self
 
 class Persistence(Extension):
+    """The Persistence Extension"""
     def __init__(self, bot: Client):
+        """Initializes Persistence.
+
+        Args:
+            bot (Client): An `interactions.Client` instance
+        """
         bot.persistent_component = MethodType(persistent_component, bot)
         bot.persistent_modal = MethodType(persistent_modal, bot)
 
     @extension_listener(name="on_component")
     async def _on_component(self, ctx: ComponentContext):
+        """The listener for components."""
         if not ctx.custom_id.startswith("persistence_"):
             return
         custom_id = PersistentCustomID.from_string(ctx.custom_id)
@@ -39,6 +55,7 @@ class Persistence(Extension):
 
     @extension_listener(name="on_modal")
     async def _on_modal(self, ctx: CommandContext):
+        """The listener for modals."""
         if not ctx.data.custom_id.startswith("persistence_"):
             return
         custom_id = PersistentCustomID.from_string(ctx.data.custom_id)
