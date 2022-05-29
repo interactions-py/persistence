@@ -1,5 +1,5 @@
 # Persistence
-An extension for interactions.py that dynamically places and returns objects in and from Discord's `custom_ids` so you don't have to.
+An extension for interactions.py that dynamically places and returns objects in and from Discord's `custom_ids` so you don't have to. Check the [wiki](https://github.com/Dworv/interactions-persistence/wiki) to learn how to use it!
 
 ## How it works
 The most popular [interactions.py](https://github.com/interactions-py) extension, [Wait-For](https://github.com/interactions-py/wait_for) is an easy and effective way to simplify complex component chains by preserving the objects used during interaction.
