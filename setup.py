@@ -16,7 +16,7 @@ setup(
     packages=["interactions.ext.persistence"],
     entry_points={
         "console_scripts": [
-            "persistence-generate-key=interactions.ext.persistence:generate_key",
+            "persistence-generate-key=interactions.ext.persistence:keygen",
         ]
     },
     classifiers=[
