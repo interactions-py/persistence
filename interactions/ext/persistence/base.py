@@ -1,9 +1,10 @@
+"The base of the extension."
 
 from interactions.ext import Base, Version, VersionAuthor
-from .extension import Persistence
+from .persistence import Persistence
 
 version = Version(
-    version="1.0.3",
+    version="2.0.0",
     author=VersionAuthor(
         name="Dworv",
         email="dwarvyt@gmail.com",
@@ -15,8 +16,8 @@ base = Base(
     version=version,
     link=f"https://github.com/dworv/interactions-persistence",
     description="An extension to add simple custom_id encoding to interactions.py.",
-    packages="interactions.ext.persistence"
+    packages="interactions.ext.persistence",
 )
 
-def setup(bot):
-    return Persistence(bot)
+def setup(bot, cipher_key=None):
+    return Persistence(bot, cipher_key)
