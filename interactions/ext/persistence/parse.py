@@ -1,95 +1,119 @@
-def persistent_custom_id(tag: str, package: "SupportsRepr"): # noqa
-    """Builds a brand new persistent custom_id.
+"""The file containing the PersistentCustomID class and all of its functionality."""
 
-        Args:
-            tag (str): The identifier for the custom_id
-            package (SupportsRepr): An object to be placed in the custom_id (must support proper repr)
+from json import loads, dumps
+from typing import Union, TYPE_CHECKING
+from interactions import Client
 
-        Raises:
-            ParseError: Evaluation the repr of the package did not return the same type.
-            ParseError: The tag and payload combined are longer than 100 characters.
-            ParseError: The package could not be evaluated because it didn't properly implement __repr__.
+from .cipher import Cipher
 
-        Returns:
-            str: The custom_id to be used in the custom_id arg for components and modals
+if TYPE_CHECKING:
+    from .persistence import Persistence
+
+
+def pack(obj):
     """
-    return str(PersistentCustomID.new(tag, package))
+    Packs a compatible object into a string.
+
+    Parameters:
+        obj (object): The object to pack.
+    """
+    if isinstance(obj, (dict, list)):
+        return dumps(obj)
+    elif isinstance(obj, (str, float, tuple)):
+        # make a list to encode it and then remove brackets
+        return dumps([obj])[1:][:-1]
+
+
+def unpack(encoded):
+    """
+    Unpacks a string into a compatible object.
+
+    Parameters:
+        encoded (str): The string to unpack.
+    """
+    print("[in parse.py unpack] before decoding", repr(encoded))
+    if encoded.startswith(("{", "[")):
+        return loads(encoded)
+    else:
+        return loads("[" + encoded + "]")[0]
+
 
 class ParseError(BaseException):
     """Called when there is an error during parsing."""
+
     pass
 
+
 class PersistentCustomID:
-    """An internal class for managing persistent custom_ids"""
-    def __init__(self, tag: str, payload: str):
-        """Creates a PersistentCustomID.
+    """
+    The Persistence custom_id parser.
 
-        Args:
-            tag (str): The identifyer for the custom_id
-            payload (str): The dynamic payload of what you send to discord
+    Used both internally and externally to parse custom_ids. Make sure to convert to a string when used in a component or modal like so: `str(your_custom_id)`.
+
+    Attributes:
+        cipher (Cipher): The cipher to use.
+        tag (str): The tag to identify the component or modal.
+        package (dict, list, str, int, float): The package of the component or modal.
+    """
+
+    def __init__(
+        self,
+        cipher: Union["Persistence", Client, Cipher],
+        tag: str,
+        package: Union[dict, list, str, int, float],
+    ):
         """
-        self.tag: str = tag
-        self.payload = payload
+        The constructor for the Persistence custom_id parser.
 
-    @property
-    def packed(self) -> str:
-        """Packs the tag and payload and prepares them to be sent to Discord.
+        Parameters:
+            cipher (Cipher): The cipher to use.
+            tag (str): The tag to identify the component or modal.
+            package (dict, list, str, int, float): The package of the component or modal.
+        """
+        if isinstance(cipher, Client):
+            self.cipher = cipher.persistence._cipher
+        elif isinstance(cipher, Cipher):
+            self.cipher = cipher
+        else:
+            try:
+                self.cipher = cipher._cipher
+            except AttributeError:
+                raise ParseError("Invalid cipher provided.")
+        self.tag = tag
+        self.package = package
+        if len(self.encrypt()) > 100:
+            raise ParseError("Encoded custom_id is too long.")
+
+    def encrypt(self):
+        """
+        Encrypts the package.
 
         Returns:
-            str: A custom_id to be used in your component or modal.
+            str: The encrypted package.
         """
-        return f"persistence_{self.tag}:{self.payload}"
+        return f"p~{self.cipher.encrypt(self.tag)}~{self.cipher.encrypt(pack(self.package))}"
 
     def __str__(self):
-        return self.packed
-
-    @property
-    def package(self) -> object:
-        """Evaluates the payload and returns an object.
-
-        Returns:
-            object: Your object that you placed in the custom_id
-        """
-        return eval(self.payload)
+        """Returns the encrypted custom_id as a string."""
+        return self.encrypt()
 
     @classmethod
-    def from_string(cls, string: str):
-        """A classmethod for unpacking a custom_id from Discord into a PersistentCustomID object.
+    def from_discord(cls, cipher: Union["Persistence", Client, Cipher], custom_id: str):
+        """The method used internally to parse custom_ids from Discord.
 
-        Args:
-            string (str): The custom_id from Discord
-
-        Returns:
-            PersistentCustomID: A new PersistentCustomID object.
+        Parameters:
+            cipher (Cipher): The cipher to use.
+            custom_id (str): The custom_id to parse.
         """
-        string = string.removeprefix("persistence_")
-        tag, payload = string.split(":")
-        return cls(tag, payload)
+        if isinstance(cipher, Client):
+            cipher = cipher.persistence._cipher
+        elif isinstance(cipher, Cipher):
+            cipher = cipher
+        else:
+            cipher = cipher._cipher
+        _, _tag, _payload = custom_id.split("~")
+        tag = cipher.decrypt(_tag)
+        payload = cipher.decrypt(_payload)
+        package = unpack(payload)
 
-    @classmethod
-    def new(cls, tag: str, package: "SupportsRepr"): # noqa
-        """Builds a brand new PersistentCustomID object.
-
-        Args:
-            tag (str): The identifier for the custom_id
-            package (SupportsRepr): An object to be placed in the custom_id (must support proper repr)
-
-        Raises:
-            ParseError: Evaluation the repr of the package did not return the same type.
-            ParseError: The tag and payload combined are longer than 100 characters.
-            ParseError: The package could not be evaluated because it didn't properly implement __repr__.
-
-        Returns:
-            PersistentCustomID: A new PersistentCustomID
-        """
-        try:
-            tested = eval(repr(package))
-            if type(tested) != type(package):
-                raise ParseError(
-                    "Evaluation the repr of the package did not return the same type."
-                )
-            if len(tag) + 1 + len(repr(package)) > 100:
-                raise ParseError("The tag and payload combined are longer than 100 characters.")
-            return cls(tag, repr(package))
-        except:
-            raise ParseError("The package could not be evaluated because it didn't properly implement __repr__.")
+        return cls(cipher, tag, package)
