@@ -31,7 +31,6 @@ def unpack(encoded):
     Parameters:
         encoded (str): The string to unpack.
     """
-    print("[in parse.py unpack] before decoding", repr(encoded))
     if encoded.startswith(("{", "[")):
         return loads(encoded)
     else:
@@ -99,7 +98,8 @@ class PersistentCustomID:
 
     @classmethod
     def from_discord(cls, cipher: Union["Persistence", Client, Cipher], custom_id: str):
-        """The method used internally to parse custom_ids from Discord.
+        """
+        The method used internally to parse custom_ids from Discord.
 
         Parameters:
             cipher (Cipher): The cipher to use.
