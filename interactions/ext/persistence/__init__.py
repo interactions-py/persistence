@@ -7,3 +7,4 @@ from .extension import (
 )
 from .parse import PersistentCustomID, ParseError
 from .persistence import Persistence
+from .scripts import generate_key
