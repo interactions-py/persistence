@@ -1,4 +1,9 @@
 from .base import base, version, setup
-from .parse import PersistentCustomID, persistent_custom_id, ParseError
-from .extension import PersistenceExtension
-from .decor import extension_persistent_component, extension_persistent_modal
+from .cipher import Cipher
+from .extension import (
+    PersistenceExtension,
+    extension_persistent_component,
+    extension_persistent_modal,
+)
+from .parse import PersistentCustomID, ParseError
+from .persistence import Persistence
