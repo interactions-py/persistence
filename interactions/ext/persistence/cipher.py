@@ -3,15 +3,17 @@
 from random import choice, randint
 from ff3 import FF3Cipher
 
+from .scripts import generate_key
+
 
 class Cipher:
     """A special Cipher object for encrypting and decrypting packages and tags."""
 
     def __init__(self, key=None):
-        hex_alphabet = "0123456789ABCDEF"
         alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^*()-_=+[]{}|;':\",./<>? "
-        key = key or "".join(choice(hex_alphabet) for _ in range(32))
-        tweak = "".join([choice(hex_alphabet) for x in range(14)])
+        key = key or generate_key()
+        tweak = "CBD09280979564" # Bad practice; should be private and random. Could not find way to do this.
+        # Must mention in docs to never put anything private inside of custom_ids.
         self._encrypter = FF3Cipher.withCustomAlphabet(key, tweak, alphabet)
 
     def encrypt(self, plain_text: str):
