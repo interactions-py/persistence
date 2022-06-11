@@ -1,1 +1,1 @@
-from keygen import generate_key
+from .keygen import generate_key
