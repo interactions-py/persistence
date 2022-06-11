@@ -18,7 +18,7 @@ setup(
         "console_scripts": [
             "persistence-generate-key=interactions.ext.persistence:generate_key",
         ]
-    }
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "Development Status :: 5 - Production/Stable",
