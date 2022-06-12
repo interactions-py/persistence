@@ -1,8 +1,8 @@
 """The main file containing the persistence extension."""
 
-from ctypes import Union
+import logging
 from types import MethodType
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict, Tuple, Union
 
 from interactions import Extension, CommandContext, ComponentContext, extension_listener
 
@@ -49,6 +49,7 @@ class Persistence(Extension):
 
         def inner(coro):
             self._component_callbacks[tag] = coro
+            logging.debug("Registered persistent component:", tag)
 
         return inner
 
@@ -64,6 +65,7 @@ class Persistence(Extension):
 
         def inner(coro):
             self._modal_callbacks[tag] = (coro, use_kwargs)
+            logging.debug("Registered persistent modal:", tag)
 
         return inner
 
@@ -83,9 +85,7 @@ class Persistence(Extension):
         if not ctx.data.custom_id.startswith("p~"):
             return
 
-        print("[full modal data]", ctx.data._json)
         pid = PersistentCustomID.from_discord(self._cipher, ctx.data.custom_id)
-        print("[after decoding]", pid.tag, pid.package)
         if callback := self._modal_callbacks.get(pid.tag):
             if callback[1] == 0:
                 args = [item["components"][0]["value"] for item in ctx.data.components]
