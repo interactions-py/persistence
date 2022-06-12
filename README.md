@@ -13,6 +13,6 @@ This could be solved by saving all previous needed interaction details to the di
 The solution, originally conceived and executed by [Toricane](https://github.com/Toricane), was to place information in Discord's custom_ids. In the vanilla library, this requires some `on_component` or `on_modal` logic. [Enhanced](https://github.com/interactions-py/enhanced) simplifies this by adding `startswith` and `regex` args to the `bot.component` and `bot.modal` decorators. However, even this is more complicated than necessary.
 
 ## Further abstraction
-Interactions-Persistence further simplifies placing objects in custom_ids using the `repr` method from objects and evaluating them to return the right type. Using this ext is not only incredibly simple, but also reliable and lightweight. Taking a similar approach to [Enhanced](https://github.com/interactions-py/enhanced), Persistence uses `on_component` and `on_modal` listeners to identify and properly call persistent decorators.
+Interactions-Persistence further simplifies placing objects in custom_ids using the json and allowing str, int, float, dict and list. The extension also encrypts custom_ids so it isn't obvious what they are doing. Using this ext is not only incredibly simple, but also reliable and lightweight. Taking a similar approach to [Enhanced](https://github.com/interactions-py/enhanced), Persistence uses `on_component` and `on_modal` listeners to identify and properly call persistent decorators.
 
 Enjoy!
