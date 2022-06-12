@@ -1,5 +1,6 @@
 """The main file containing the persistence extension."""
 
+from json import JSONDecodeError
 import logging
 from types import MethodType
 from typing import Callable, Dict, Tuple, Union
@@ -74,8 +75,11 @@ class Persistence(Extension):
         """The on_component listener. This is called when a component is used."""
         if not ctx.custom_id.startswith("p~"):
             return
-
-        pid = PersistentCustomID.from_discord(self._cipher, ctx.custom_id)
+        try:
+            pid = PersistentCustomID.from_discord(self._cipher, ctx.custom_id)
+        except JSONDecodeError:
+            logging.info("Interaction made with invalid persistent custom_id. Skipping.")
+        
         if pid.tag in self._component_callbacks:
             await self._component_callbacks[pid.tag](ctx, pid.package)
 
@@ -85,7 +89,11 @@ class Persistence(Extension):
         if not ctx.data.custom_id.startswith("p~"):
             return
 
-        pid = PersistentCustomID.from_discord(self._cipher, ctx.data.custom_id)
+        try:
+            pid = PersistentCustomID.from_discord(self._cipher, ctx.custom_id)
+        except JSONDecodeError:
+            logging.info("Interaction made with invalid persistent custom_id. Skipping.")
+        
         if callback := self._modal_callbacks.get(pid.tag):
             if callback[1] == 0:
                 args = [item["components"][0]["value"] for item in ctx.data.components]
