@@ -1,15 +1,15 @@
-from inspect import getmembers, iscoroutinefunction
-from types import MethodType
-from interactions import Client, ComponentContext, CommandContext, Extension, extension_listener
+"""The file holding the PersistenceExension class and all of its functionality."""
 
-from .decor import persistent_component, persistent_modal
-from .parse import PersistentCustomID
+from inspect import getmembers, iscoroutinefunction
+from interactions import Extension, Client
 
 
 class PersistenceExtension(Extension):
     """The PersistenceExtension is based off of regular Extensions, but adds callbacks for persistent components and modals"""
+
     def __new__(cls, client: Client, *args, **kwargs):
-        """The extended __new__ dunder method for Persistence Extensions.
+        """
+        The extended __new__ dunder method for Persistence Extensions.
 
         Args:
             client (Client): An `interactions.Client` instance
@@ -20,57 +20,44 @@ class PersistenceExtension(Extension):
 
         self = super().__new__(cls, client, *args, **kwargs)
 
-        for _, func in getmembers(self, predicate=iscoroutinefunction):
+        for _, func in getmembers(
+            self, predicate=iscoroutinefunction
+        ):  # credits to toricane for the inspect stuff
             if hasattr(func, "__persistence_type__"):
-                if func.__persistence_type__ == "component": 
-                    client.event(func, name="component_persistence_" + func.__persistence_tag__)
+                if func.__persistence_type__ == "component":
+                    client.persistence.component(func.__persistence_tag__)(func)
                 elif func.__persistence_type__ == "modal":
-                    client.event(func, name="modal_persistence_" + func.__persistence_tag__)
+                    client.persistence.modal(func.__persistence_tag__, func.__persistence_use_kwargs__)(func)
 
-        return self
 
-class Persistence(Extension):
-    """The Persistence Extension"""
-    def __init__(self, bot: Client):
-        """Initializes Persistence.
+def extension_persistent_component(tag: str):
+    """Callback for persistent components in extensions
 
-        Args:
-            bot (Client): An `interactions.Client` instance
-        """
-        bot.persistent_component = MethodType(persistent_component, bot)
-        bot.persistent_modal = MethodType(persistent_modal, bot)
+    Args:
+        tag (str): The tag to identify your component
+    """
 
-    @extension_listener(name="on_component")
-    async def _on_component(self, ctx: ComponentContext):
-        """The listener for components."""
-        if not ctx.custom_id.startswith("persistence_"):
-            return
-        custom_id = PersistentCustomID.from_string(ctx.custom_id)
-        listener = self.client._websocket._dispatch
-        for name, funcs in listener.events.items():
-            if name == "component_persistence_" + custom_id.tag:
-                for func in funcs:
-                    await func(ctx, custom_id.package)
-                break
+    def inner(coro):
+        coro.__persistence_type__ = "component"
+        coro.__persistence_tag__ = tag
+        return coro
 
-    @extension_listener(name="on_modal")
-    async def _on_modal(self, ctx: CommandContext):
-        """The listener for modals."""
-        if not ctx.data.custom_id.startswith("persistence_"):
-            return
-        custom_id = PersistentCustomID.from_string(ctx.data.custom_id)
-        listener = self.client._websocket._dispatch
-        answers = []
-        if ctx.data._json.get("components"):
-            for component in ctx.data.components:
-                if component.get("components"):
-                    answers.append(
-                        [_value["value"] for _value in component["components"]][0]
-                    )
-                else:
-                    answers.append([_value.value for _value in component.components][0])
-        for name, funcs in listener.events.items():
-            if name == "modal_persistence_" + custom_id.tag:
-                for func in funcs:
-                    await func(ctx, custom_id.package, *answers)
-                break
+    return inner
+
+
+def extension_persistent_modal(tag: str, use_kwargs: bool = False):
+    """Callback for persistent modals in extensions
+
+    Args:
+        tag (str): The tag to identify your modal
+        use_kwargs (bool): Whether to return key word arguments mapped with the custom_ids of the individual text inputs. Not recommended.
+                (defaults to False)
+    """
+
+    def inner(coro):
+        coro.__persistence_type__ = "modal"
+        coro.__persistence_tag__ = tag
+        coro.__persistence_use_kwargs__ = use_kwargs
+        return coro
+
+    return inner
