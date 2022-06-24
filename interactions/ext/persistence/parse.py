@@ -34,7 +34,7 @@ def unpack(encoded):
     if encoded.startswith(("{", "[")):
         return loads(encoded)
     else:
-        return loads("[" + encoded + "]")[0]
+        return loads(f"[{encoded}]")[0]
 
 
 class ParseError(BaseException):
@@ -76,8 +76,8 @@ class PersistentCustomID:
         else:
             try:
                 self.cipher = cipher._cipher
-            except AttributeError:
-                raise ParseError("Invalid cipher provided.")
+            except AttributeError as e:
+                raise ParseError("Invalid cipher provided.") from e
         self.tag = tag
         self.package = package
         if len(self.encrypt()) > 100:

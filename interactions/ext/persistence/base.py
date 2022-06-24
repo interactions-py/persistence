@@ -14,7 +14,7 @@ version = Version(
 base = Base(
     name="Persistence",
     version=version,
-    link=f"https://github.com/dworv/interactions-persistence",
+    link="https://github.com/dworv/interactions-persistence",
     description="An extension to add simple custom_id encoding to interactions.py.",
     packages="interactions.ext.persistence",
 )
