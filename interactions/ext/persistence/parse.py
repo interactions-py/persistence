@@ -19,7 +19,7 @@ def pack(obj):
     """
     if isinstance(obj, (dict, list)):
         return dumps(obj)
-    elif isinstance(obj, (str, float, tuple)):
+    elif isinstance(obj, (str, int, tuple)):
         # make a list to encode it and then remove brackets
         return dumps([obj])[1:][:-1]
 
