@@ -90,7 +90,7 @@ class Persistence(Extension):
             return
 
         try:
-            pid = PersistentCustomID.from_discord(self._cipher, ctx.custom_id)
+            pid = PersistentCustomID.from_discord(self._cipher, ctx.data.custom_id)
         except JSONDecodeError:
             logging.info("Interaction made with invalid persistent custom_id. Skipping.")
         
