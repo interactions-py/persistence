@@ -90,7 +90,9 @@ class PersistentCustomID:
         Returns:
             str: The encrypted package.
         """
-        return f"p~{self.cipher.encrypt(self.tag)}~{self.cipher.encrypt(pack(self.package))}"
+        sep = len(self.tag)
+        raw = self.cipher.encrypt(self.tag+pack(self.package))
+        return f"p~{raw[:sep]}~{raw[sep:]}"
 
     def __str__(self):
         """Returns the encrypted custom_id as a string."""
@@ -105,15 +107,21 @@ class PersistentCustomID:
             cipher (Cipher): The cipher to use.
             custom_id (str): The custom_id to parse.
         """
-        if isinstance(cipher, Client):
+        # if its a bot
+        if hasattr(cipher, "persistence"):
             cipher = cipher.persistence._cipher
+        # if its a cipher object
         elif isinstance(cipher, Cipher):
             cipher = cipher
+        # if its a persistence object
         else:
             cipher = cipher._cipher
+        
         _, _tag, _payload = custom_id.split("~")
-        tag = cipher.decrypt(_tag)
-        payload = cipher.decrypt(_payload)
+        sep = len(_tag)
+        raw = cipher.decrypt(_tag+_payload)
+        tag = raw[:sep]
+        payload = raw[sep:]
         package = unpack(payload)
 
         return cls(cipher, tag, package)
