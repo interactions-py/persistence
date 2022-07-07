@@ -92,7 +92,7 @@ class PersistentCustomID:
         """
         sep = len(self.tag)
         raw = self.cipher.encrypt(self.tag+pack(self.package))
-        return f"p~{raw[:sep]}~{raw[sep:]}"
+        return f"p0~{raw[:sep]}~{raw[sep:]}"
 
     def __str__(self):
         """Returns the encrypted custom_id as a string."""
@@ -117,11 +117,14 @@ class PersistentCustomID:
         else:
             cipher = cipher._cipher
         
-        _, _tag, _payload = custom_id.split("~")
+        _version, _tag, _payload = custom_id.split("~")
+
         sep = len(_tag)
-        raw = cipher.decrypt(_tag+_payload)
+        raw = cipher.decrypt(_tag+_payload, _version)
         tag = raw[:sep]
         payload = raw[sep:]
+        
+        
         package = unpack(payload)
 
         return cls(cipher, tag, package)

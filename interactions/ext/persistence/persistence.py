@@ -50,7 +50,7 @@ class Persistence(Extension):
 
         def inner(coro):
             self._component_callbacks[tag] = coro
-            logging.debug(f"Registered persistent component: {tag}")
+            logging.debug("Registered persistent component:", tag)
 
         return inner
 
@@ -66,15 +66,19 @@ class Persistence(Extension):
 
         def inner(coro):
             self._modal_callbacks[tag] = (coro, use_kwargs)
-            logging.debug(f"Registered persistent modal: {tag}")
+            logging.debug("Registered persistent modal:", tag)
 
         return inner
 
     @extension_listener
     async def on_component(self, ctx: ComponentContext):
         """The on_component listener. This is called when a component is used."""
-        if not ctx.custom_id.startswith("p~"):
+        if not any((
+            ctx.custom_id.startswith("p~"),
+            ctx.custom_id[0] == "p" and ctx.custom_id[2] == "~"
+        )):
             return
+
         try:
             pid = PersistentCustomID.from_discord(self._cipher, ctx.custom_id)
         except JSONDecodeError:
@@ -86,7 +90,10 @@ class Persistence(Extension):
     @extension_listener
     async def on_modal(self, ctx: CommandContext):
         """The on_modal listener. This is called when a modal is submitted."""
-        if not ctx.data.custom_id.startswith("p~"):
+        if not any((
+            ctx.custom_id.startswith("p~"),
+            ctx.custom_id[0] == "p" and ctx.custom_id[2] == "~"
+        )):
             return
 
         try:

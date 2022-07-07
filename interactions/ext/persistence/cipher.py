@@ -33,13 +33,23 @@ class Cipher:
         Returns:
             str: The encrypted string.
         """
-        if len(plain_text) <= 28:
-            return self._encrypter.encrypt(plain_text)
-        chunks = [str(plain_text[i : i + 28]) for i in range(0, len(plain_text), 28)]
-        encrypted_chunks = [self._encrypter.encrypt(chunk) for chunk in chunks]
-        return "".join(encrypted_chunks)
 
-    def decrypt(self, encrypted_text):
+        # if len(plain_text) <= 24:
+        #     return self._encrypter.encrypt(plain_text)
+        # chunks = [str(plain_text[i : i + 28]) for i in range(0, len(plain_text), 28)]
+        # encrypted_chunks = [self._encrypter.encrypt(chunk) for chunk in chunks]
+
+        chunk_map = list(range(0, len(plain_text), 24))
+        if len(plain_text) % 24 in range(1, 4):
+            chunk_map.pop()
+        chunks = []
+        for i in chunk_map:
+            if (i/24)+1 == len(chunk_map):
+                chunks.append(self._encrypter.encrypt(plain_text[i:]))
+                return "".join(chunks)
+            chunks.append(self._encrypter.encrypt(plain_text[i:i+24]))
+
+    def decrypt(self, encrypted_text, version: str):
         """
         Decrypts a string.
 
@@ -49,8 +59,20 @@ class Cipher:
         Returns:
             str: The decrypted string.
         """
-        if len(encrypted_text) <= 28:
-            return self._encrypter.decrypt(encrypted_text)
-        chunks = [str(encrypted_text[i : i + 28]) for i in range(0, len(encrypted_text), 28)]
-        decrypted_chunks = [self._encrypter.decrypt(chunk) for chunk in chunks]
-        return "".join(decrypted_chunks)
+        if version == "p":
+            if len(encrypted_text) <= 28:
+                return self._encrypter.decrypt(encrypted_text)
+            chunks = [str(encrypted_text[i : i + 28]) for i in range(0, len(encrypted_text), 28)]
+            decrypted_chunks = [self._encrypter.decrypt(chunk) for chunk in chunks]
+            return "".join(decrypted_chunks)
+
+        elif version == "p0":
+            chunk_map = list(range(0, len(encrypted_text), 24))
+            if len(encrypted_text) % 24 in range(1, 4):
+                chunk_map.pop()
+            chunks = []
+            for i in chunk_map:
+                if i/24 == len(chunk_map) - 1:
+                    chunks.append(self._encrypter.decrypt(encrypted_text[i:]))
+                    return "".join(chunks)
+                chunks.append(self._encrypter.decrypt(encrypted_text[i:i+24]))
