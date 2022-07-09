@@ -91,8 +91,8 @@ class Persistence(Extension):
     async def on_modal(self, ctx: CommandContext):
         """The on_modal listener. This is called when a modal is submitted."""
         if not any((
-            ctx.custom_id.startswith("p~"),
-            ctx.custom_id[0] == "p" and ctx.custom_id[2] == "~"
+            ctx.data.custom_id.startswith("p~"),
+            ctx.data.custom_id[0] == "p" and ctx.data.custom_id[2] == "~"
         )):
             return
 
