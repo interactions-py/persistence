@@ -28,6 +28,8 @@ class PersistenceExtension(Extension):
                     client.persistence.component(func.__persistence_tag__)(func)
                 elif func.__persistence_type__ == "modal":
                     client.persistence.modal(func.__persistence_tag__, func.__persistence_use_kwargs__)(func)
+        
+        return self
 
 
 def extension_persistent_component(tag: str):
