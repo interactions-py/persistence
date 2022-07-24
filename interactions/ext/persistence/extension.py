@@ -59,6 +59,7 @@ class PersistenceExt:
                         func.__persistence_tag__, func.__persistence_use_kwargs__
                     )(func)
 
+        return self
 
 def extension_persistent_component(tag: str):
     """Callback for persistent components in extensions
