@@ -66,7 +66,7 @@ class Persistence(Extension):
 
         def inner(coro):
             self._modal_callbacks[tag] = (coro, use_kwargs)
-            logging.debug("Registered persistent modal: {tag}")
+            logging.debug(f"Registered persistent modal: {tag}")
 
         return inner
 
